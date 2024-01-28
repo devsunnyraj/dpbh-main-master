@@ -1,0 +1,24 @@
+  {
+    "manifest_version": 3,
+    "name": "Keyword Detector",
+    "version": "1.0",
+    "description": "Detecting the dark patterns",
+    "permissions": ["activeTab"],
+    "background.service_worker": {
+      "scripts": ["popup.js"],
+      "persistent": false
+    },
+    "action": {
+      "default_icon": {
+        "16": "Style=Default.png"
+      },
+      "default_popup": "popup.html",
+      "default_title": "Click to detect dark pattern"
+    },
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["content.js"]
+      }
+    ]
+  }

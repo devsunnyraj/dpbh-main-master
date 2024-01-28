@@ -1,0 +1,19 @@
+
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+      }
+
+      h1 {
+        font-size: 24px;
+        margin-bottom: 10px;
+      }
+
+      #keywordCount {
+        font-size: 18px;
+        font-weight: bold;
+        margin-top: 10px;
+      }
