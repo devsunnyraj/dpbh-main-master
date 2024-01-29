@@ -10,7 +10,7 @@
     },
     "action": {
       "default_icon": {
-        "16": "Style=Default.png"
+        "16": "logo.png"
       },
       "default_popup": "popup.html",
       "default_title": "Click to detect dark pattern"
