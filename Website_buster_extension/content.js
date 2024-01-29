@@ -13,6 +13,7 @@ const keywords = [
   "Want a special deal?",
   "Hurry, Limited Time Offer!",
   "% off",
+  "Up to",
   "Hurry",
   "Help"
 ];
