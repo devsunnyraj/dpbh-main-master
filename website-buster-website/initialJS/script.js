@@ -89,3 +89,12 @@ link.addEventListener("click", e => {
  forms.classList.toggle("show-signup");
 })
 })
+
+loginbutton = document.querySelector(".loginbutton")
+signupbutton = document.querySelector(".signupbutton")
+searchButton = document.querySelector(".searchButton")
+
+signupbutton.addEventListener("click",()=>{
+    forms.classList.toggle("show-signup")
+})
+
