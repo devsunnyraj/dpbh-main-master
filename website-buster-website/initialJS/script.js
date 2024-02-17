@@ -97,4 +97,3 @@ searchButton = document.querySelector(".searchButton")
 signupbutton.addEventListener("click",()=>{
     forms.classList.toggle("show-signup")
 })
-
