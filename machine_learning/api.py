@@ -1,68 +1,59 @@
-import flask_cors
-import flask
-import requests
-import pickle
-import numpy as np
-import pandas as pd
-import tensorflow as tf
+from selenium import webdriver
+from bs4 import BeautifulSoup
+from tensorflow.keras.models import load_model
 from sklearn.feature_extraction.text import CountVectorizer
-import nltk
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
-import re
-
-
-app=flask.Flask(__name__)
-app.config["DEBUG"]=True
-app.config["CORS_HEADERS"]='Content-Type'
-cors=flask_cors.CORS(app,resources={r"/predict":{"origins":"*"}})
-
-
-def load_model():
-    global cv
-    library=pickle.load(open("vocab.pkl","rb"))
-    cv=CountVectorizer(vocabulary=library)
+import pickle
+import flask
+import numpy as np
+def initialize():
+    global driver
     global model
-    model=tf.keras.models.load_model("cnn.h5")
-    global lable_index
-    lable_index=pickle.load(open("lable_index.pkl","rb"))
+    global cv
+    global decoder
+    options = webdriver.ChromeOptions()
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--headless')
+    options.add_argument("--disable-blink-features=AutomationControlled") 
+    options.add_experimental_option("excludeSwitches", ["enable-automation"]) 
+    options.add_experimental_option("useAutomationExtension", False)
+    driver = webdriver.Chrome(options=options)
+    model=load_model('machine_learning/cnn.h5')
+    vocab=pickle.load(open('machine_learning/vocab.pkl','rb'))
+    cv=CountVectorizer(vocabulary=vocab)
+    decoder=pickle.load(open('machine_learning/lable_index.pkl','rb'))
+    
+def get_data(url):
+    driver.get(url)
+    driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+    html = driver.page_source
+    soup = BeautifulSoup(html, 'html.parser')
+    data=soup.get_text(strip=True, separator=',')
+    data=data.split(',')
+    return data
+def predict_(data):
+    clas=cv.transform(data).toarray()
+    clas=model.predict(clas)
+    print(clas)
+    clas=np.argmax(clas,axis=1)
+    clas=clas.tolist()
+    dict={'class':clas,'data':data}
+    return dict
+#convert np array to list
+#clas=clas.tolist()
+flask_app = flask.Flask(__name__)
 
-
-app=flask.Flask(__name__)
-@app.route('/',methods=['GET'])
-def text_cleaning(text):
-    lemmatizer=WordNetLemmatizer()
-    text=text.lower()
-    text=re.sub('\[.*?\]','',text)
-    text=re.sub("\\W"," ",text)
-    text=re.sub('https?://\S+|www\.\S+','',text)
-    text=re.sub('<.*?>+','',text)
-    text=re.sub('[%s]'%re.escape(string.punctuation),'',text)
-    text=re.sub('\n','',text)
-    text=re.sub('\w*\d\w*','',text)
-    text=re.sub(' +',' ',text)
-    text=[lemmatizer.lemmatize(token) for token in text.split(" ")]
-    stop_words=stopwords.words('english')
-    text=[lemmatizer.lemmatize(token) for token in text if token not in stop_words]
-    text=" ".join(text)
-    return text
-
-def main():
-    if flask.request.method=='GET':
-        return(flask.render_template('index.html'))
-@app.route('/predict',methods=['GET','POST'])
+@flask_app.route('/predict', methods=['GET'])
 def predict():
-    words=flask.request.form['words']
-    words=text_cleaning(words)
-    words=cv.transform([words])
-    words=words.toarray()
-    words=np.expand_dims(words,axis=2)
-    prediction=model.predict(words)
-    
-    output=prediction[0]
-    np.argmax(output)
-    return flask.render_template('index.html',prediction_text='The pattern category is {}'.format(output))
-if __name__=='__main__':
-    load_model()
-    app.run(debug=True,host='0,0,0,0',port=5000)
-    
+    #get the url from json
+    url = flask.request.json['url']
+    #get the data from the url
+    data=get_data(url)
+    #predict the data
+    prediction=predict_(data)
+    #return the prediction
+    return flask.jsonify(prediction), 200
+if __name__ == '__main__':
+    initialize()
+    flask_app.run(host='0.0.0.0', port=5000, debug=True)
+
