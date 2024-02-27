@@ -4443,3 +4443,7 @@ del {
 	background-color: red;
 	color: white;
 }
+
+.disabled-mcq{
+	pointer-events: none;
+}

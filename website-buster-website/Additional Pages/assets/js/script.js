@@ -9,5 +9,6 @@ puzzleOptions.forEach(element => {
         else{
             element.classList.add("option-wrong")
         }
+        element.parentNode.classList.add("disabled-mcq")
     })
 });
